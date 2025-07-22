@@ -1,10 +1,10 @@
-package com.AuthPOC.backend;
+package com.JWT.auth_api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BackendApplicationTests {
+class AuthApiApplicationTests {
 
 	@Test
 	void contextLoads() {
