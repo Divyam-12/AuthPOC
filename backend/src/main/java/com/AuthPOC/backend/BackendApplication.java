@@ -1,13 +1,13 @@
-package com.Backend.authPOC;
+package com.AuthPOC.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AuthPocApplication {
+public class BackendApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AuthPocApplication.class, args);
+		SpringApplication.run(BackendApplication.class, args);
 	}
 
 }
