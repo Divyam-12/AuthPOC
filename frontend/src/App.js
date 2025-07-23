@@ -1,24 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
+import LoginForm from "./Components/loginForm";
+import RegisterForm from "./Components/registerForm";
+import ProtectedPage from "./Components/protectedPage";
+import AllUsers from "./Components/allUsers";
+import { useEffect } from "react";
 
 function App() {
+  // useEffect(() => {
+  //   fetch('http://localhost:8080/register').then(resp=>resp.text())
+  //   .then(resp=>{
+  //     console.log('Getting Text from API:' +resp);
+  //   })
+  // }, []);
+  const [token, setToken] = useState(localStorage.getItem("token"));
+
+  useEffect(() => {
+  const storedToken = localStorage.getItem("token");
+  if (storedToken) {
+    setToken(storedToken);
+  }
+}, []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="min-h-screen bg-gray-100 p-4">
+        <Routes>
+          <Route path="/register" element={<RegisterForm />} />
+          <Route path="/users" element={<AllUsers />} />
+          <Route path="/login" element={<LoginForm onLogin={(tok) => setToken(tok)} />} />
+          <Route
+            path="/protected"
+            element={token ? <ProtectedPage /> : <Navigate to="/login" />}
+          />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
