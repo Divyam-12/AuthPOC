@@ -3,6 +3,7 @@ import { useState } from "react";
 import LoginForm from "./Components/loginForm";
 import RegisterForm from "./Components/registerForm";
 import ProtectedPage from "./Components/protectedPage";
+import OtpVerificationForm from "./Components/OtpVerificationForm";
 import AllUsers from "./Components/allUsers";
 import { useEffect } from "react";
 
@@ -33,6 +34,7 @@ function App() {
             element={token ? <ProtectedPage /> : <Navigate to="/login" />}
           />
           <Route path="*" element={<Navigate to="/login" />} />
+          <Route path="/verify-otp" element={<OtpVerificationForm />} />
         </Routes>
       </div>
     </Router>
