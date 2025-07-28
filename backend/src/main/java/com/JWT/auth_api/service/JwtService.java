@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.JWT.auth_api.model.User;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -47,14 +48,18 @@ public class JwtService {
 		return extractClaim(token, Claims::getSubject);
 	}
 	
-	private Claims extractAllClaims(String token)
-	{
-		return Jwts
-				.parser()
-				.verifyWith(getSigninKey())
-				.build()
-				.parseSignedClaims(token)
-				.getPayload();
+	private Claims extractAllClaims(String token) {
+	    try {
+	        return Jwts
+	            .parser()
+	            .verifyWith(getSigninKey())
+	            .build()
+	            .parseSignedClaims(token)
+	            .getPayload();
+	    } catch (ExpiredJwtException e) {
+	        // Optional: Log or throw custom error
+	        throw new RuntimeException("JWT token has expired. Please login again.");
+	    }
 	}
 	
 	public String generateToken(User user)
@@ -63,7 +68,7 @@ public class JwtService {
 				.builder()
 				.subject(user.getUsername())
 				.issuedAt(new Date(System.currentTimeMillis()))
-				.expiration(new Date(System.currentTimeMillis()+24*60*60*1000))
+				.expiration(new Date(System.currentTimeMillis()+24*60*60*1000*7	))
 				.signWith(getSigninKey())
 				.compact();
 		return token;

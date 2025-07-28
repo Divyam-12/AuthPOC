@@ -38,11 +38,11 @@ public class User implements UserDetails {
     @Column(name = "role", nullable = false)
     private Role role;
 
-//    @Column(name = "verified", nullable = false)
-//    private boolean verified = false;
-//
-//    @Column(name = "otp")
-//    private String otp;
+    @Column(name = "verified")
+    private boolean verified = false;
+
+    @Column(name = "otp")
+    private String otp;
 
     // Spring Security
 

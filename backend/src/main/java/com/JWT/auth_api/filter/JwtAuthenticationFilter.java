@@ -1,73 +1,78 @@
-package com.JWT.auth_api.filter;
+	package com.JWT.auth_api.filter;
+	
+	import java.io.IOException;
+	
+	import org.springframework.lang.NonNull;
+	import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+	import org.springframework.security.core.context.SecurityContextHolder;
+	import org.springframework.security.core.userdetails.UserDetails;
+	import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+	import org.springframework.stereotype.Component;
+	import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-
-import org.springframework.lang.NonNull;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
+import com.JWT.auth_api.model.User;
 import com.JWT.auth_api.service.JwtService;
-import com.JWT.auth_api.service.UserDetailsServiceImp;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-@Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter{
+	import com.JWT.auth_api.service.UserDetailsServiceImp;
 	
-	private final JwtService jwtService;	
-	private final UserDetailsServiceImp userDetailsService;
+	import jakarta.servlet.FilterChain;
+	import jakarta.servlet.ServletException;
+	import jakarta.servlet.http.HttpServletRequest;
+	import jakarta.servlet.http.HttpServletResponse;
 	
-	public JwtAuthenticationFilter(JwtService jwtService, UserDetailsServiceImp userDetailsService) {
-		this.userDetailsService=userDetailsService;
-		this.jwtService = jwtService;
-	}
-	
-	@Override
-	protected void doFilterInternal(
-	        @NonNull HttpServletRequest request,
-	        @NonNull HttpServletResponse response,
-	        @NonNull FilterChain filterChain) throws ServletException, IOException {
+	@Component
+	public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	    // ✅ Skip filtering for public endpoints
-	    String path = request.getServletPath();
-	    if (path.equals("/register") || path.equals("/login")) {
-	        filterChain.doFilter(request, response);
-	        return;
+	    private final JwtService jwtService;	
+	    private final UserDetailsServiceImp userDetailsService;
+
+	    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsServiceImp userDetailsService) {
+	        this.userDetailsService = userDetailsService;
+	        this.jwtService = jwtService;
 	    }
 
-	    // ⬇️ Continue with normal token check
-	    String authHeader = request.getHeader("Authorization");
+	    @Override
+	    protected void doFilterInternal(
+	            @NonNull HttpServletRequest request,
+	            @NonNull HttpServletResponse response,
+	            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-	        filterChain.doFilter(request, response);
-	        return;
-	    }
-
-	    String token = authHeader.substring(7);
-	    String username = jwtService.extractUsername(token);
-
-	    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-	        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-	        if (jwtService.isValid(token, userDetails)) {
-	            UsernamePasswordAuthenticationToken authToken =
-	                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-	            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-	            SecurityContextHolder.getContext().setAuthentication(authToken);
+	        String path = request.getServletPath();
+	        if (path.equals("/register") || path.equals("/login") || path.equals("/verify-otp")) {
+	            filterChain.doFilter(request, response);
+	            return;
 	        }
+
+	        String authHeader = request.getHeader("Authorization");
+	        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+	            filterChain.doFilter(request, response);
+	            return;
+	        }
+
+	        String token = authHeader.substring(7);
+	        String username = null;
+
+	        try {
+	            username = jwtService.extractUsername(token);
+	        } catch (RuntimeException e) {
+	            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+	            return;
+	        }
+
+
+	        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+	            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+	            if (jwtService.isValid(token, userDetails)) {
+	                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+	                        userDetails,
+	                        null,
+	                        userDetails.getAuthorities());
+
+	                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+	                SecurityContextHolder.getContext().setAuthentication(authToken);
+	            }
+	        }
+
+	        filterChain.doFilter(request, response);
 	    }
 
-	    filterChain.doFilter(request, response);
 	}
-
-	
-}
