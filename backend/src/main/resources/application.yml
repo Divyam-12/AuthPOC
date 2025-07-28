@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/crudusers
     username: postgres
-    password: password 
+    password: password
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -17,7 +17,7 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-mail:
+  mail:
     host: smtp.gmail.com
     port: 587
     username: testingDivyam12@gmail.com
