@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { register } from "../Services/api";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function RegisterForm() {
@@ -11,48 +10,66 @@ export default function RegisterForm() {
     password: "",
     role: "",
   });
+
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
+  };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const res = await register(form);
-  //     if (res.token) {
-  //       setSuccess("Registered successfully! You can now log in.");
-  //       setError("");
-  //     } else {
-  //       setError("Registration failed.");
-  //     }
-  //   } catch {
-  //     setError("Error registering.");
-  //   }
-  // };
+  const isValidEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await axios.post("http://localhost:8080/register", form); // Update URL as per your backend
-    if (res.data?.token) {
-      setSuccess("Registered successfully! You can now log in.");
-      setError("");
-      setForm({
-        firstName: "",
-        lastName: "",
-        username: "",
-        password: "",
-        role: "",
-      });
-    } else {
-      setError("Registration failed.");
+    e.preventDefault();
+
+    if (!isValidEmail(form.username)) {
+      setError("Please enter a valid email.");
+      return;
     }
-  } catch (err) {
-    const msg = err?.response?.data?.message || "Error registering.";
-    setError(msg);
-  }
-};
+
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    try {
+      const res = await axios.post("http://localhost:8080/register", form);
+
+      if (res.data?.token) {
+        setSuccess("Registered successfully! Check your email for OTP.");
+        setError("");
+
+        navigate("/verify-otp", {
+          state: { email: form.username },
+        });
+
+        setForm({
+          firstName: "",
+          lastName: "",
+          username: "",
+          password: "",
+          role: "",
+        });
+      } else {
+        setError("Registration failed.");
+      }
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message?.toLowerCase() || "Error registering.";
+
+      if (msg.includes("email already exists") || msg.includes("user already exists")) {
+        setError("Email already exists. Try logging in.");
+      } else {
+        setError("Error registering: " + msg);
+      }
+    }
+  };
 
   return (
     <form
@@ -62,35 +79,45 @@ export default function RegisterForm() {
       <h2 className="text-2xl font-bold">Register</h2>
       {success && <p className="text-green-500">{success}</p>}
       {error && <p className="text-red-500">{error}</p>}
+
       <input
         name="firstName"
         placeholder="First Name"
         value={form.firstName}
         onChange={handleChange}
         className="w-full p-2 border rounded"
+        required
       />
+
       <input
         name="lastName"
         placeholder="Last Name"
         value={form.lastName}
         onChange={handleChange}
         className="w-full p-2 border rounded"
+        required
       />
+
       <input
         name="username"
-        placeholder="Username"
+        placeholder="Email"
+        type="email"
         value={form.username}
         onChange={handleChange}
         className="w-full p-2 border rounded"
+        required
       />
+
       <input
         type="password"
         name="password"
-        placeholder="Password"
+        placeholder="Password (min 6 characters)"
         value={form.password}
         onChange={handleChange}
         className="w-full p-2 border rounded"
+        required
       />
+
       <select
         name="role"
         value={form.role}
@@ -102,9 +129,11 @@ export default function RegisterForm() {
         <option value="USER">User</option>
         <option value="ADMIN">Admin</option>
       </select>
+
       <button className="w-full bg-green-500 text-white p-2 rounded">
         Register
       </button>
+
       <Link
         to="/login"
         className="block w-full text-center border border-gray-300 text-gray-700 p-2 rounded hover:bg-gray-100"
