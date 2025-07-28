@@ -2,10 +2,10 @@ debug: true
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/crudusers
-    username: root
-    password: "7489871104@divi"  # Enclose in quotes due to special character (@)
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://localhost:5432/crudusers
+    username: postgres
+    password: password 
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -14,5 +14,5 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    database: mysql
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
