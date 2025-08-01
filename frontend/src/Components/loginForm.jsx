@@ -1,58 +1,74 @@
 import { useState } from "react";
-import { login } from "../Services/api";
-import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
+import FaceWebcam from "./FaceWebcam";
 
 export default function LoginForm({ onLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [faceVector, setFaceVector] = useState(null);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    
+    try {
+      // ✅ Step 1: Authenticate username/password
+      const response = await axios.post(
+        "http://localhost:8080/login",
+        {
+          username,
+          password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Login response:", response.data);
+      const res = response.data;
+      // console.log(res);
 
-  try {
-    const response = await axios.post("http://localhost:8080/login", {
-      username,
-      password,
-    });
-    const res = response.data;
-
-    if (res.token) {
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("role", res.role);
-
-      onLogin?.(res.token);
-
-      if (res.role === "ADMIN") {
-        navigate("/users");
-      } else {
-        navigate("/protected");
+      // ✅ Step 2: Require face verification
+      if (!faceVector) {
+        setError("Please capture your face for verification.");
+        setLoading(false);
+        return;
       }
-    } else {
-      setError("Invalid credentials.");
-    }
-  } catch (err) {
-    setError(err?.response?.data?.message || "Error logging in.");
-  } finally {
-    setLoading(false);
-  }
-};
+      
+      console.log("step2");
+      const faceRes = await axios.post(
+        `http://localhost:8080/face/verify?username=${username}`, JSON.stringify(faceVector), {
+        headers: { "Content-Type": "application/json", 
+          Authorization: `Bearer ${res.token}`,
+         }
+      });
+      console.log("step3");
+      
+      console.log("Face verification response:", faceRes.data); 
 
-//   navigate("/users");
-//     } else {
-//       setError("Invalid credentials.");
-//     }
-//   } catch (err) {
-//     setError(err.message || "Error logging in.");
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+      if (faceRes.data === "Face verified.") {
+        localStorage.setItem("token", res.token);
+        localStorage.setItem("role", res.role);
+        onLogin?.(res.token);
+        navigate(res.role === "ADMIN" ? "/users" : "/protected");
+      } else {
+        setError("Face not recognized. Try again.");
+      }
+    } catch (err) {
+      console.log("Caught error:", err);
+      setError(err?.response?.data?.message || "Error logging in.");
+        // setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <form
@@ -86,11 +102,15 @@ export default function LoginForm({ onLogin }) {
         required
       />
 
+      <FaceWebcam onDescriptor={setFaceVector} />
+
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !faceVector}
         className={`w-full p-2 rounded text-white ${
-          loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+          loading || !faceVector
+            ? "bg-gray-400"
+            : "bg-blue-500 hover:bg-blue-600"
         }`}
       >
         {loading ? "Logging in..." : "Login"}

@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ✅ This line is critical
                         .requestMatchers("/ping").permitAll()
                         .requestMatchers("/verify-otp").permitAll()
+                        .requestMatchers("/face/register").permitAll()
 //                        .requestMatchers(HttpMethod.GET, "/users").permitAll()
                         .requestMatchers("/users").hasAuthority("ADMIN")  // Only admin can access
                         .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
