@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import FaceWebcam from "./FaceWebcam";
 
 export default function RegisterForm() {
   const [form, setForm] = useState({
@@ -13,6 +14,7 @@ export default function RegisterForm() {
 
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [faceVector, setFaceVector] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -28,6 +30,10 @@ export default function RegisterForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!faceVector) {
+      setError("Please capture your face before registering.");
+      return;
+    }
     if (!isValidEmail(form.username)) {
       setError("Please enter a valid email.");
       return;
@@ -41,6 +47,10 @@ export default function RegisterForm() {
     try {
       const res = await axios.post("http://localhost:8080/register", form);
 
+      // Save face vector to backend
+      await axios.post(`http://localhost:8080/face/register?username=${form.username}`, JSON.stringify(faceVector), {
+        headers: { "Content-Type": "application/json" }
+      });
       if (res.data?.token) {
         setSuccess("Registered successfully! Check your email for OTP.");
         setError("");
@@ -130,6 +140,7 @@ export default function RegisterForm() {
         <option value="ADMIN">Admin</option>
       </select>
 
+      <FaceWebcam onDescriptor={setFaceVector} />
       <button className="w-full bg-green-500 text-white p-2 rounded">
         Register
       </button>

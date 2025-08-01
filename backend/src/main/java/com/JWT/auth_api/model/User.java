@@ -9,11 +9,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.*;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
@@ -43,6 +47,9 @@ public class User implements UserDetails {
 
     @Column(name = "otp")
     private String otp;
+
+    @Column(name = "face_vector_json", columnDefinition = "TEXT")
+    private String faceVectorJson;
 
     // Spring Security
 
