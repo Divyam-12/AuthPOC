@@ -5,6 +5,7 @@ import RegisterForm from "./Components/registerForm";
 import ProtectedPage from "./Components/protectedPage";
 import OtpVerificationForm from "./Components/OtpVerificationForm";
 import AllUsers from "./Components/allUsers";
+import {AuthProvider} from "./contexts/AuthContext";
 import { useEffect } from "react";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
   }
 }, []);
   return (
+    <AuthProvider>
     <Router>
       <div className="min-h-screen bg-gray-100 p-4">
         <Routes>
@@ -38,6 +40,7 @@ function App() {
         </Routes>
       </div>
     </Router>
+    </AuthProvider>
   );
 }
 
