@@ -1,20 +1,24 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { ping } from "../Services/api";
-import { useNavigate } from "react-router-dom"; 
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function ProtectedPage() {
   const [message, setMessage] = useState("");
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const { logout, role } = useContext(AuthContext);
 
   const handlePing = async () => {
-    const token = localStorage.getItem("token");
-    const res = await ping(token);
-    setMessage(res);
+    try {
+      const res = await ping(localStorage.getItem("token"));
+      setMessage(res);
+    } catch (err) {
+      setMessage("Failed to call API");
+    }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
+    logout();
     navigate("/login");
   };
 
@@ -29,12 +33,16 @@ export default function ProtectedPage() {
           Logout
         </button>
       </div>
+
+      <p className="text-gray-700 mb-2">Role: {role}</p>
+
       <button
         onClick={handlePing}
         className="bg-purple-500 text-white p-2 rounded"
       >
         Call /ping
       </button>
+
       {message && <p className="mt-4">{message}</p>}
     </div>
   );

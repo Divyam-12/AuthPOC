@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import FaceWebcam from "./FaceWebcam";
+import { AuthContext } from "../contexts/AuthContext";
 
-export default function LoginForm({ onLogin }) {
+export default function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -11,52 +12,49 @@ export default function LoginForm({ onLogin }) {
   const [faceVector, setFaceVector] = useState(null);
 
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    
+
     try {
-      // ✅ Step 1: Authenticate username/password
+      // Step 1: Authenticate username/password
       const response = await axios.post(
         "http://localhost:8080/login",
-        {
-          username,
-          password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        { username, password },
+        { headers: { "Content-Type": "application/json" } }
       );
-      console.log("Login response:", response.data);
-      const res = response.data;
-      // console.log(res);
 
-      // ✅ Step 2: Require face verification
+      const res = response.data;
+      console.log("Login response:", res);
+
+      // Step 2: Require face verification
       if (!faceVector) {
         setError("Please capture your face for verification.");
         setLoading(false);
         return;
       }
-      
-      console.log("step2");
+
       const faceRes = await axios.post(
-        `http://localhost:8080/face/verify?username=${username}`, JSON.stringify(faceVector), {
-        headers: { "Content-Type": "application/json", 
-          Authorization: `Bearer ${res.token}`,
-         }
-      });
-      console.log("step3");
-      
-      console.log("Face verification response:", faceRes.data); 
+        `http://localhost:8080/face/verify?username=${username}`,
+        JSON.stringify(faceVector),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${res.token}`,
+          },
+        }
+      );
+
+      console.log("Face verification response:", faceRes.data);
 
       if (faceRes.data === "Face verified.") {
-        localStorage.setItem("token", res.token);
-        localStorage.setItem("role", res.role);
-        onLogin?.(res.token);
+        // ✅ Use AuthContext login method
+        login(res.token, res.role);
+
+        // Navigate based on role
         navigate(res.role === "ADMIN" ? "/users" : "/protected");
       } else {
         setError("Face not recognized. Try again.");
@@ -64,7 +62,6 @@ export default function LoginForm({ onLogin }) {
     } catch (err) {
       console.log("Caught error:", err);
       setError(err?.response?.data?.message || "Error logging in.");
-        // setError(err.message);
     } finally {
       setLoading(false);
     }
