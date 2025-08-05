@@ -12,7 +12,7 @@ export default function AllUsers() {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await fetch("http://localhost:8080/users", {
+        const res = await fetch("https://localhost:8443/users", {
           headers: {
             Authorization: `Bearer ${token}`
           }

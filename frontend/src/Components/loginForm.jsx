@@ -22,7 +22,7 @@ export default function LoginForm() {
     try {
       // Step 1: Authenticate username/password
       const response = await axios.post(
-        "http://localhost:8080/login",
+        "https://localhost:8443/login",
         { username, password },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -38,7 +38,7 @@ export default function LoginForm() {
       }
 
       const faceRes = await axios.post(
-        `http://localhost:8080/face/verify?username=${username}`,
+        `https://localhost:8443/face/verify?username=${username}`,
         JSON.stringify(faceVector),
         {
           headers: {
