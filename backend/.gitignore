@@ -1,9 +1,9 @@
 HELP.md
 target/
-!/target/backend.jar
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+!/target/backend.jar
 
 ### STS ###
 .apt_generated
