@@ -27,30 +27,35 @@ export default function RegisterForm() {
     return re.test(email);
   };
 
+  const isFormValid = () => {
+    return (
+      form.firstName.trim() &&
+      form.lastName.trim() &&
+      isValidEmail(form.username) &&
+      form.password.length >= 6 &&
+      form.role &&
+      faceVector !== null
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!faceVector) {
-      setError("Please capture your face before registering.");
-      return;
-    }
-    if (!isValidEmail(form.username)) {
-      setError("Please enter a valid email.");
-      return;
-    }
-
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (!isFormValid()) {
+      setError("Please complete all fields and capture your face.");
       return;
     }
 
     try {
       const res = await axios.post("http://localhost:8080/register", form);
 
-      // Save face vector to backend
-      await axios.post(`http://localhost:8080/face/register?username=${form.username}`, JSON.stringify(faceVector), {
-        headers: { "Content-Type": "application/json" }
-      });
+      // Save face vector
+      await axios.post(
+        `http://localhost:8080/face/register?username=${form.username}`,
+        JSON.stringify(faceVector),
+        { headers: { "Content-Type": "application/json" } }
+      );
+
       if (res.data?.token) {
         setSuccess("Registered successfully! Check your email for OTP.");
         setError("");
@@ -72,8 +77,10 @@ export default function RegisterForm() {
     } catch (err) {
       const msg =
         err?.response?.data?.message?.toLowerCase() || "Error registering.";
-
-      if (msg.includes("email already exists") || msg.includes("user already exists")) {
+      if (
+        msg.includes("email already exists") ||
+        msg.includes("user already exists")
+      ) {
         setError("Email already exists. Try logging in.");
       } else {
         setError("Error registering: " + msg);
@@ -141,7 +148,16 @@ export default function RegisterForm() {
       </select>
 
       <FaceWebcam onDescriptor={setFaceVector} />
-      <button className="w-full bg-green-500 text-white p-2 rounded">
+
+      <button
+        type="submit"
+        disabled={!isFormValid()}
+        className={`w-full text-white p-2 rounded ${
+          isFormValid()
+            ? "bg-green-500 hover:bg-green-600"
+            : "bg-gray-400 cursor-not-allowed"
+        }`}
+      >
         Register
       </button>
 
