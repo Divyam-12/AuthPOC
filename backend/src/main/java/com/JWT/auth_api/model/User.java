@@ -1,5 +1,6 @@
 package com.JWT.auth_api.model;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -50,6 +51,13 @@ public class User implements UserDetails {
 
     @Column(name = "face_vector_json", columnDefinition = "TEXT")
     private String faceVectorJson;
+    
+    private LocalDateTime otpGeneratedAt;
+    
+    @Column(name = "failed_login_attempts")
+    private int failedLoginAttempts;
+    @Column(name = "lock_until")
+    private LocalDateTime lockUntil;
 
     // Spring Security
 
@@ -77,4 +85,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true; // Optional: only allow login if verified
     }
+
 }
