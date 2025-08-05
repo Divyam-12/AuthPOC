@@ -157,7 +157,7 @@ public class AuthenticationService {
                 double[] v1 = parseJsonArray(stored);
                 double[] v2 = faceVectorJson.stream().mapToDouble(Double::doubleValue).toArray();
                 double similarity = cosineSimilarity(v1, v2);
-                return similarity > 0.7; // Adjust threshold as needed
+                return similarity > 0.9; // Adjust threshold as needed
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
