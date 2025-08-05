@@ -15,7 +15,7 @@ export default function OtpVerificationForm() {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:8080/verify-otp", null, {
+      const res = await axios.post("https://localhost:8443/verify-otp", null, {
         params: { email, otp },
       });
 

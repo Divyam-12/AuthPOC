@@ -47,11 +47,11 @@ export default function RegisterForm() {
     }
 
     try {
-      const res = await axios.post("http://localhost:8080/register", form);
+      const res = await axios.post("https://localhost:8443/register", form);
 
       // Save face vector
       await axios.post(
-        `http://localhost:8080/face/register?username=${form.username}`,
+        `https://localhost:8443/face/register?username=${form.username}`,
         JSON.stringify(faceVector),
         { headers: { "Content-Type": "application/json" } }
       );

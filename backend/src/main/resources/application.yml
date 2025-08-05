@@ -14,13 +14,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: testingDivyam12@gmail.com
+    username: testingdivyam12@gmail.com
     password: klxfknaeooacnmqp
     properties:
       mail:
@@ -28,3 +27,12 @@ spring:
           auth: true
           starttls:
             enable: true
+
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-store-password: password
+    key-store-type: PKCS12
+    key-alias: myalias
