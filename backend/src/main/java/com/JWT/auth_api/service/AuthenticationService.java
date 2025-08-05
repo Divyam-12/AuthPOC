@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.JWT.auth_api.exception.CustomAuthException;
 import com.JWT.auth_api.model.AuthenticationResponse;
 import com.JWT.auth_api.model.User;
 import com.JWT.auth_api.repository.UserRepository;
@@ -62,11 +63,11 @@ public class AuthenticationService {
         System.out.println("Authenticating: " + request.getUsername());
 
         User user = repository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new CustomAuthException("User not found"));
 
         // 🚫 Check if account is locked
         if (user.getLockUntil() != null && user.getLockUntil().isAfter(LocalDateTime.now())) {
-            throw new RuntimeException("Account is temporarily locked. Try again at: " + user.getLockUntil());
+            throw new CustomAuthException("Account is temporarily locked. Try again at: " + user.getLockUntil());
         }
 
         try {
@@ -85,12 +86,12 @@ public class AuthenticationService {
             }
 
             repository.save(user);
-            throw new RuntimeException("Invalid username or password");
+            throw new CustomAuthException("Invalid username or password");
         }
 
         // ✅ Check if user is verified
         if (!user.isVerified()) {
-            throw new RuntimeException("Email not verified. Please verify using OTP.");
+            throw new CustomAuthException("Email not verified. Please verify using OTP.");
         }
 
         // ✅ Reset failed attempt counters
